@@ -15,7 +15,7 @@ authRouter.post("/signUpAsAdmin", async (req, res) => {
     try {
 
         const { name, email, password } = req.body;
-        
+
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -38,8 +38,12 @@ authRouter.post("/signUpAsAdmin", async (req, res) => {
             { expiresIn: "1d" }
         );
 
-     
-        res.cookie("token", token, { httpOnly: true });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None"
+        });
 
         res.status(201).json({
             message: "Admin created successfully",
@@ -76,7 +80,11 @@ authRouter.post("/signUp", async (req, res) => {
             { expiresIn: "1d" }
         );
 
-        res.cookie("token", token);
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None"
+        });
         res.status(200).json({
             message: "User signed up successfully",
             user: response
@@ -93,29 +101,33 @@ authRouter.post("/login", async (req, res) => {
 
         const { email, password } = req.body;
 
-    
+
         const user = await User.findOne({ email: email });
 
         if (!user) {
             throw new Error("Invalid credentials");
         }
 
-      
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
             throw new Error("Invalid credentials");
         }
 
-       
+
         const token = jwt.sign(
             { _id: user._id },
             SECRET_KEY,
             { expiresIn: "1d" }
         );
 
-        
-        res.cookie("token", token, { httpOnly: true });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None"
+        });
 
         res.status(200).json({
             message: "Login successful",
