@@ -101,6 +101,34 @@ toDoRouter.put("/update/:id", userAuth, async (req, res) => {
     }
 });
 
+toDoRouter.put("/markAsCompleted/:id", userAuth, async(req, res) =>{
+    try{
+        const userId = req.user._id;
+        const todoId = req.params.id;
+        const todo = await Todo.findOne({_id:todoId, userId:userId});
+        const isCompleted = todo.isCompleted;
+        if(!todo){
+            return res.status(404).json({
+                message: "Todo not found"
+            });
+        }
+        const updatedTodo = await Todo.findOneAndUpdate(
+            { _id: todoId, userId: userId },
+            { isCompleted: !isCompleted },
+            { new: true }
+        );
+        res.status(200).json({
+            message: "Todo marked as completed",
+            todo: updatedTodo
+        });
+    }
+    catch(error){
+        res.status(400).json({
+            error: error.message
+        });
+    }
+});
+
 
 toDoRouter.put("/markallcompleted", userAuth, async (req, res) => {
     try {
@@ -109,7 +137,8 @@ toDoRouter.put("/markallcompleted", userAuth, async (req, res) => {
 
         const result = await Todo.updateMany(
             { userId },
-            { isCompleted: true }
+            { isCompleted: true },
+            { new: true }
         );
 
         res.status(200).json({
@@ -168,6 +197,29 @@ toDoRouter.get("/admin/all/Todos", userAuth, adminAuth, async (req, res) => {
     }
 });
 
+
+toDoRouter.delete("/admin/delete/:id", userAuth, adminAuth, async (req, res) => {
+    try { 
+        const toDoId = req.params.id;
+
+        const response = await Todo.findByIdAndDelete(toDoId);
+
+        if (!response) {
+            return res.status(404).json({
+                message: "Todo not found"
+            });
+        }    
+        res.status(200).json({
+            message: "Todo deleted successfully",
+            response: response
+        });        
+ }
+    catch(error){
+            res.status(500).json({      
+            error: error.message
+        }); 
+    }
+});
 
 
 

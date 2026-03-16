@@ -12,10 +12,11 @@ const app = express();
 
 app.use(cors({
   origin: [
+    "https://todofrontend-dg3x.onrender.com",
     "http://localhost:5173",
-    "https://todofrontend-dg3x.onrender.com"
   ],
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
 }));
 
 
@@ -36,7 +37,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-
+ // 
 
 connectDB();
 app.listen(PORT, () =>{
