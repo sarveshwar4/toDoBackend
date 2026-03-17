@@ -116,6 +116,7 @@ authRouter.post("/admin/login", async (req, res) => {
 
 authRouter.post("/signUp", async (req, res) => {
     try {
+        validatSignUpData(req);
         const { name, email, password } = req.body;
 
         const passwordHash = await bcrypt.hash(password, 10);
