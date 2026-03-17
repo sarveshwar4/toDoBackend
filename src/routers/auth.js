@@ -4,6 +4,7 @@ const { validatSignUpData } = require('../utils/validation.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const { userAuth } = require('../utils/userAuth.js');
 
 dotenv.config();
 
@@ -115,8 +116,6 @@ authRouter.post("/admin/login", async (req, res) => {
 
 authRouter.post("/signUp", async (req, res) => {
     try {
-        validatSignUpData(req);
-
         const { name, email, password } = req.body;
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -194,6 +193,30 @@ authRouter.post("/login", async (req, res) => {
             error: err.message
         });
     }
+});
+
+authRouter.get("/check", userAuth, async(req, res) => {
+     try{
+        const user = req.user;
+        if(user){
+            res.status(200).json({
+                message: "User is authenticated",
+                isLoggedIn: true
+            });
+        }
+
+        else{
+            res.status(200).json({
+                message: "User is not authenticated",
+                isLoggedIn: false
+            });
+        }
+     }
+     catch(error){
+        res.status(400).json({
+            error: error.message
+        }); 
+     }
 });
 
 authRouter.post("/logout", (req, res) =>{
