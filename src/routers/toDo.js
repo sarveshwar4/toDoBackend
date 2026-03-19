@@ -8,14 +8,21 @@ const { adminAuth } = require("../utils/adminAuth");
 toDoRouter.post("/add", userAuth, async (req, res) => {
     try {
 
-        const { title, description } = req.body;
+        const { title, description, dueDate } = req.body;
+
+        if (!dueDate) {
+            const today = new Date();
+            today.setDate(today.getDate() + 2);
+            dueDate = today;
+        }
 
         const userId = req.user._id;
 
         const todo = new Todo({
             title,
             description,
-            userId: userId
+            userId: userId,
+            dueDate : dueDate
         });
 
         const savedTodo = await todo.save();
@@ -40,19 +47,19 @@ toDoRouter.get("/all", userAuth, async (req, res) => {
     const search = req.query.search;
     const completed = req.query.completed;
 
-   
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
     let filter = { userId };
 
-   
+
     if (search) {
         filter.title = { $regex: search, $options: "i" };
     }
 
-    
+
     if (completed !== undefined) {
         filter.isCompleted = completed === "true";
     }
@@ -82,7 +89,7 @@ toDoRouter.put("/update/:id", userAuth, async (req, res) => {
             { new: true }
         );
 
- 
+
         if (!updatedTodo) {
             return res.status(404).json({
                 message: "Todo not found"
@@ -101,13 +108,13 @@ toDoRouter.put("/update/:id", userAuth, async (req, res) => {
     }
 });
 
-toDoRouter.put("/markAsCompleted/:id", userAuth, async(req, res) =>{
-    try{
+toDoRouter.put("/markAsCompleted/:id", userAuth, async (req, res) => {
+    try {
         const userId = req.user._id;
         const todoId = req.params.id;
-        const todo = await Todo.findOne({_id:todoId, userId:userId});
+        const todo = await Todo.findOne({ _id: todoId, userId: userId });
         const isCompleted = todo.isCompleted;
-        if(!todo){
+        if (!todo) {
             return res.status(404).json({
                 message: "Todo not found"
             });
@@ -122,7 +129,7 @@ toDoRouter.put("/markAsCompleted/:id", userAuth, async(req, res) =>{
             todo: updatedTodo
         });
     }
-    catch(error){
+    catch (error) {
         res.status(400).json({
             error: error.message
         });
@@ -154,26 +161,26 @@ toDoRouter.put("/markallcompleted", userAuth, async (req, res) => {
 });
 
 toDoRouter.delete("/delete/:id", userAuth, async (req, res) => {
-    try{
+    try {
 
         const toDoId = req.params.id;
         const userId = req.user._id;
-        const response = await Todo.findOneAndDelete({_id:toDoId, userId:userId});
+        const response = await Todo.findOneAndDelete({ _id: toDoId, userId: userId });
 
-    if(!response){
-        return res.status(404).json({
+        if (!response) {
+            return res.status(404).json({
                 message: "Todo not found"
             });
-    }
+        }
 
-    res.status(200).json({
-        message: "Todo deleted successfully",
-        response:response
-    });
+        res.status(200).json({
+            message: "Todo deleted successfully",
+            response: response
+        });
 
     }
-    catch(error){
-         res.status(500).json({
+    catch (error) {
+        res.status(500).json({
             error: error.message
         });
     }
@@ -182,7 +189,7 @@ toDoRouter.delete("/delete/:id", userAuth, async (req, res) => {
 toDoRouter.get("/admin/all/Todos", userAuth, adminAuth, async (req, res) => {
     try {
 
-        const todos = await Todo.find();
+        const todos = await Todo.find().populate("userId", "name");
 
         res.status(200).json({
             message: "All todos fetched successfully",
@@ -199,7 +206,7 @@ toDoRouter.get("/admin/all/Todos", userAuth, adminAuth, async (req, res) => {
 
 
 toDoRouter.delete("/admin/delete/:id", userAuth, adminAuth, async (req, res) => {
-    try { 
+    try {
         const toDoId = req.params.id;
 
         const response = await Todo.findByIdAndDelete(toDoId);
@@ -208,16 +215,16 @@ toDoRouter.delete("/admin/delete/:id", userAuth, adminAuth, async (req, res) => 
             return res.status(404).json({
                 message: "Todo not found"
             });
-        }    
+        }
         res.status(200).json({
             message: "Todo deleted successfully",
             response: response
-        });        
- }
-    catch(error){
-            res.status(500).json({      
+        });
+    }
+    catch (error) {
+        res.status(500).json({
             error: error.message
-        }); 
+        });
     }
 });
 
