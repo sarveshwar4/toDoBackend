@@ -12,8 +12,8 @@ const app = express();
 
 app.use(cors({
   origin: [
+    "https://todofrontend-dg3x.onrender.com"
     // "http://localhost:5173",
-    "https://todofrontend-dg3x.onrender.com",
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
