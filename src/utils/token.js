@@ -16,5 +16,4 @@ const createAuthToken  = (user) => {
         throw new Error("Token creation failed: " + error.message);
     }
 };
-
 module.exports = {createAuthToken };
